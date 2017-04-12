@@ -1,4 +1,4 @@
-# Golang S2I Docker images
+# Golang S2I Builder
 
 [![Build Status](https://travis-ci.org/ausnimbus/s2i-golang.svg?branch=master)](https://travis-ci.org/ausnimbus/s2i-golang)
 [![Docker Repository on Quay](https://quay.io/repository/ausnimbus/s2i-golang/status "Docker Repository on Quay")](https://quay.io/repository/ausnimbus/s2i-golang)
