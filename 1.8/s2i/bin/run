@@ -1,5 +1,4 @@
 #!/bin/bash
-
 set -e
 
-exec $GOPATH/bin/main
+exec $GOPATH/bin/$(basename ${APP_URI:-"main"})
