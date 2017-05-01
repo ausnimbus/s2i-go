@@ -1,0 +1,33 @@
+#!/bin/bash -e
+source /opt/app-root/etc/golang_environment
+
+shopt -s dotglob
+
+if [ -d /tmp/artifacts/ ]; then
+    echo "---> Restoring build artifacts..."
+    mv -v /tmp/artifacts/* ./
+fi
+
+echo "===> Build started at $(date)"
+
+echo "---> Preparing source..."
+mkdir -p $SOURCE
+mv /tmp/src/* $SOURCE
+pushd $SOURCE > /dev/null
+
+if [ ! -d "./vendor/" ]; then
+  echo "---> Downloading dependencies..."
+	go get -v ./...
+else
+    echo "---> Downloading dependencies skipped because 'vendor/' directory is present."
+fi
+
+echo "---> Building application source..."
+go install -v
+
+echo "===> Build completed at $(date)"
+
+# Fix source directory permissions
+fix-permissions ./
+
+popd >/dev/null

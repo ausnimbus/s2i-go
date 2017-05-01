@@ -1,0 +1,18 @@
+# Folders
+/vendor/
+/node_modules/
+/filestorage/*
+
+# OS Files
+.DS_Store
+thumbs.db
+!/filestorage/README.md
+
+# Blue Jay Files
+env.json
+*.exe
+*.exe~
+blueprint
+
+# JetBrains IDE metadata
+.idea

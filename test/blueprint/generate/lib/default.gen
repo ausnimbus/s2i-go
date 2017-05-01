@@ -1,0 +1,6 @@
+// Package {{.package}}
+package {{.package}}
+
+// Info holds the config.
+type Info struct {
+}

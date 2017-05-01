@@ -1,4 +1,0 @@
-#!/bin/bash
-set -e
-
-exec $GOPATH/bin/$(basename ${APP_URI:-"main"})

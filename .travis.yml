@@ -1,8 +1,16 @@
 sudo: required
 services:
 - docker
+before_install:
+# Install s2i
+- |
+  go get github.com/openshift/source-to-image
+  pushd ${GOPATH}/src/github.com/openshift/source-to-image
+  export PATH=$PATH:${GOPATH}/src/github.com/openshift/source-to-image/_output/local/bin/linux/amd64/
+  hack/build-go.sh
+  popd
 script:
-- ". test/run"
+- "DOCKER_PUSH=false . hack/run build"
 notifications:
   slack:
     secure: Dtb2kj+QEGyDftcAI/NRJIdZGOvLC0RwX9AIWZD/pmdjw9EzAo4W1DIPlW0uFtg/GhxQTXjJcjTPBWbTXsSC7Ca1vfIVDtFH0VH6ar2D9sogt3GYzpQ0qvs7M8EyNI7OSjutLw5GwMtLHDmdL7gsyTzh6EEfCzfOjrOTx03RmFSwMvXaEbQvwAPLiSKkb8yuAakf+8JPL7bkzJcAec7B0BFLOlki29mrrFabpWA0fT212o3gzaQ1uxoHw950DXspcFfkALcaKCnF4Tch3hU86/CAue7Xus5+BWNcxtpd3SPLooMDvULhermQ3Y8YVrBJOscjX+3dzW3SltXDCStMXZqdD7jNJlxYpzmp7oULzKwA/dYHMF6bULlU77Brz7Bi+FEWLBk4jfulFhDGgD9UHVHI9SCTFr08pSefqMQfWyrEpzoJrgjqCM8nTb2YqiTR+O3ych3UO1d3e/xmNvQhiHxAU85XIJxPQsUA8moNP2jK7GIN7JBGCIgHHr5uzfiwPYdzksj7wSsNb+P1lWWqdcGTV1kIaCCfinHfuXNCmTuZwI2WyRtYKIomODGxDtBG16cGBcU1t5a8lo8lx7MmbsLiqBKOgphJEslyDpGzmF9zU1q+MQA5RDQvDPCZbmYKVESBqbln0g3VezuZ5d8EmP21Eh64CUEcNbl4Zk3Yuo8=

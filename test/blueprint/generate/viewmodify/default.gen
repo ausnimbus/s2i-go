@@ -1,0 +1,12 @@
+// Package {{.package}}
+package {{.package}}
+
+import (
+	"net/http"
+
+	"github.com/blue-jay/core/view"
+)
+
+// Modify
+func Modify(w http.ResponseWriter, r *http.Request, v *view.Info) {
+}

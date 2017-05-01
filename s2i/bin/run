@@ -1,0 +1,4 @@
+#!/bin/bash -e
+source /opt/app-root/etc/golang_environment
+
+exec $GOPATH/bin/$(basename ${APP_URI})

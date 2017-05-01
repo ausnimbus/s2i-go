@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# nothing yet
+#tar cf - $(ls -d vendor 2>/dev/null)

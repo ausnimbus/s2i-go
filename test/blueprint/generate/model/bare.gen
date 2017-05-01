@@ -1,0 +1,79 @@
+// Package {{.package}}
+package {{.package}}
+
+import (
+	"database/sql"
+	"fmt"
+
+	"github.com/go-sql-driver/mysql"
+)
+
+var (
+	// table is the table name.
+	table = "{{.table}}"
+)
+
+// Item defines the model.
+type Item struct {
+	ID        uint32         `db:"id"`
+	Name      string         `db:"name"`
+	UserID    uint32         `db:"user_id"`
+	CreatedAt mysql.NullTime `db:"created_at"`
+	UpdatedAt mysql.NullTime `db:"updated_at"`
+	DeletedAt mysql.NullTime `db:"deleted_at"`
+}
+
+// Connection is an interface for making queries.
+type Connection interface {
+	Exec(query string, args ...interface{}) (sql.Result, error)
+	Get(dest interface{}, query string, args ...interface{}) error
+	Select(dest interface{}, query string, args ...interface{}) error
+}
+
+// ByID gets an item by ID.
+func ByID(db Connection, ID string, userID string) (Item, error) {
+	var result Item
+	var err error
+	log.Println("Not Implemented")
+	return result, err == sql.ErrNoRows, err
+}
+
+// ByUserID gets all items for a user.
+func ByUserID(db Connection, userID string) ([]Item, error) {
+	var result []Item
+	var err error
+	log.Println("Not Implemented")
+	return result, err == sql.ErrNoRows, err
+}
+
+// Create adds an item.
+func Create(db Connection, name string, userID string) (sql.Result, error) {
+	var result sql.Result
+	var err error
+	log.Println("Not Implemented")
+	return result, err
+}
+
+// Update makes changes to an existing item.
+func Update(db Connection, name string, ID string, userID string) (sql.Result, error) {
+	var result sql.Result
+	var err error
+	log.Println("Not Implemented")
+	return result, err
+}
+
+// DeleteHard removes an item.
+func DeleteHard(db Connection, ID string, userID string) (sql.Result, error) {
+	var result sql.Result
+	var err error
+	log.Println("Not Implemented")
+	return result, err
+}
+
+// DeleteSoft marks an item as removed.
+func DeleteSoft(db Connection, ID string, userID string) (sql.Result, error) {
+	var result sql.Result
+	var err error
+	log.Println("Not Implemented")
+	return result, err
+}

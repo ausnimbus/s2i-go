@@ -1,0 +1,4 @@
+#!/bin/bash
+
+APP_URI=${APP_URI:-"main"}
+SOURCE=${GOPATH}/src/${APP_URI}
