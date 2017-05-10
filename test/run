@@ -16,4 +16,4 @@ VERSION_COMMAND="go version"
 EXTRA_TESTS=""
 
 test_dir="$(readlink -zf $(dirname "${BASH_SOURCE[0]}"))"
-source ${test_dir}/../common/tests/functions
+source ${test_dir}/../common/tests/s2i
