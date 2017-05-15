@@ -16,10 +16,18 @@ mv /tmp/src/* $SOURCE
 pushd $SOURCE > /dev/null
 
 if [ ! -d "./vendor/" ]; then
-  echo "---> Downloading dependencies..."
-	go get -v ./...
+  if [ -f "./Gopkg.toml" ]; then
+    echo "---> Using golang dep manager (found Gopkg.toml)"
+  	echo "---> Downloading golang dep from github.com/golang/dep"
+  	go get -u github.com/golang/dep/...
+  	echo "---> Downloading dependencies (dep ensure)"
+  	dep ensure
+  else
+    echo "---> Downloading dependencies (go get -v ./...)"
+  	go get -v ./...
+  fi
 else
-    echo "---> Downloading dependencies skipped because 'vendor/' directory is present."
+    echo "---> Downloading dependencies skipped because 'vendor/' directory is present"
 fi
 
 echo "---> Building application source..."
