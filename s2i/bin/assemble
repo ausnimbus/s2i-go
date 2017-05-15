@@ -15,19 +15,37 @@ mkdir -p $SOURCE
 mv /tmp/src/* $SOURCE
 pushd $SOURCE > /dev/null
 
-if [ ! -d "./vendor/" ]; then
-  if [ -f "./Gopkg.toml" ]; then
-    echo "---> Using golang dep manager (found Gopkg.toml)"
-  	echo "---> Downloading golang dep from github.com/golang/dep"
-  	go get -u github.com/golang/dep/...
-  	echo "---> Downloading dependencies (dep ensure)"
-  	dep ensure
-  else
-    echo "---> Downloading dependencies (go get -v ./...)"
-  	go get -v ./...
-  fi
+if [ -f "./vendor.json" ]; then
+  echo "---> Using govendor (found vendor.json)"
+  echo "---> Downloading govendor from github.com/kardianos/govendor"
+  go get -u github.com/kardianos/govendor
+  echo "---> Downloading dependencies (govendor sync)"
+  govendor sync
+
+elif [ -f "./glide.yaml" ]; then
+  echo "---> Using glide (found glide.yaml)"
+  echo "---> Downloading glide"
+  curl https://glide.sh/get | sh
+  echo "---> Downloading dependencies (glide install)"
+  glide install
+
+elif [ (test -d "${build}/src" && test -n "$(find "${build}/src" -mindepth 2 -type f -name '*.go' | sed 1q)") ]; then
+  echo "---> Using gb"
+  echo "---> Downloading govendor from github.com/constabulary/gb/..."
+  go get github.com/constabulary/gb/...
+  echo "---> Downloading dependencies (gb build)"
+  gb build
+
+elif [ -f "./Gopkg.toml" ]; then
+  echo "---> Using golang dep manager (found Gopkg.toml)"
+  echo "---> Downloading golang dep from github.com/golang/dep"
+  go get -u github.com/golang/dep/cmd/dep
+  echo "---> Downloading dependencies (dep ensure)"
+  dep ensure
+  
 else
-    echo "---> Downloading dependencies skipped because 'vendor/' directory is present"
+  echo "---> Downloading dependencies (go get -v ./...)"
+  go get -v ./...
 fi
 
 echo "---> Building application source..."
