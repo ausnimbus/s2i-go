@@ -29,7 +29,8 @@ elif [ -f "./glide.yaml" ]; then
   echo "---> Downloading dependencies (glide install)"
   glide install
 
-elif [ $(test -d "./src" && test -n "$(find "./src" -mindepth 2 -type f -name '*.go' | sed 1q)") ]; then
+#elif [ $(test -d "./src" && test -n "$(find "./src" -mindepth 2 -type f -name '*.go' | sed 1q)") ]; then
+elif [ -d "./src" -a -n "$(find "./build/src" -mindepth 2 -type f -name '*.go' | sed 1q)" ]; then
   echo "---> Using gb"
   echo "---> Downloading govendor from github.com/constabulary/gb/..."
   go get github.com/constabulary/gb/...

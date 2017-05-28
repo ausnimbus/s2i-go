@@ -15,8 +15,7 @@ TEST_APPS=({print,gowebapp,blueprint})
 VERSION_COMMAND="go version"
 
 extra_tests() {
-  info 'Testing PRESTISSIMO'
-  CONTAINER_ARGS='-e PRESTISSIMO=true' test_application
+  echo ""
 }
 
 test_dir="$(readlink -zf $(dirname "${BASH_SOURCE[0]}"))"
