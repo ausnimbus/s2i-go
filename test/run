@@ -13,7 +13,11 @@ S2I_ARGS=${S2I_ARGS:-""}
 
 TEST_APPS=({print,gowebapp,blueprint})
 VERSION_COMMAND="go version"
-EXTRA_TESTS=""
+
+extra_tests() {
+  info 'Testing PRESTISSIMO'
+  CONTAINER_ARGS='-e PRESTISSIMO=true' test_application
+}
 
 test_dir="$(readlink -zf $(dirname "${BASH_SOURCE[0]}"))"
 source ${test_dir}/../common/tests/s2i

@@ -7,13 +7,9 @@ This repository contains the source for the [source-to-image](https://github.com
 builders used to deploy [Go applications](https://www.ausnimbus.com.au/languages/golang/)
 on [AusNimbus](https://www.ausnimbus.com.au/).
 
-The builders are built using PHP binaries from php.net
-
-If you are interested in using SCL-based PHP binaries, use [s2i-php-scl](https://github.com/ausnimbus/s2i-php-scl)
-
 ## Versions
 
 The versions currently supported are:
 
-- 1.7.5
-- 1.8.1
+- 1.7.6
+- 1.8.3

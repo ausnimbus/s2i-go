@@ -2,22 +2,10 @@
 
 NAME="golang"
 DISPLAY_NAME="Golang"
-REPO="ausnimbus/s2i-golang"
-TEMPLATES="pre,s2i,template,post"
+TYPE="s2i"
 VARIANT="alpine"
 VERSIONS="1.7,1.8"
 
 DOCKER_PUSH=${DOCKER_PUSH:-"false"}
 
-if [ $# -ne 1 ]; then
-    echo "Usage: ./hack/run [build,update]"
-    exit
-fi
-
-if [ "$1" == "build" ]; then
-  source $(readlink -zf $(dirname "${BASH_SOURCE[0]}"))/../common/hack/run
-fi
-
-if [ "$1" == "update" ]; then
-  source $(readlink -zf $(dirname "${BASH_SOURCE[0]}"))/../common/hack/update
-fi
+source $(readlink -zf $(dirname "${BASH_SOURCE[0]}"))/../common/hack/run
