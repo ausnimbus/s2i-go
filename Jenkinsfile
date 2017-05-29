@@ -111,7 +111,7 @@ node {
         echo "Starting test application"
         echo "==============================="
 
-        def testApp = openshift.newApp("https://github.com/ausnimbus/s2i-golang-ex", "--image-stream=s2i-golang:${versions[i]}", "-l app=golang-ex");
+        def testApp = openshift.newApp("https://github.com/ausnimbus/golang-ex", "--image-stream=s2i-golang:${versions[i]}", "-l app=golang-ex");
         echo "new-app created ${testApp.count()} objects named: ${testApp.names()}"
         testApp.describe()
 
