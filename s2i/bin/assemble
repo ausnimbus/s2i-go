@@ -11,46 +11,54 @@ fi
 echo "===> Build started at $(date)"
 
 echo "---> Preparing source..."
-mkdir -p $SOURCE
+mkdir -p $SOURCE $GOPATH/bin
 mv /tmp/src/* $SOURCE
 pushd $SOURCE > /dev/null
 
-if [ -f "./vendor.json" ]; then
+# Godep
+if [ -f "./Gopkg.toml" ]; then
+  echo "---> Using golang dep manager (found Gopkg.toml)"
+  echo "---> Downloading golang dep from github.com/golang/dep"
+  go get -u github.com/golang/dep/cmd/dep
+  echo "---> Downloading dependencies (dep ensure)"
+  dep ensure
+  echo "---> Installing application source..."
+  go install -v
+
+# Govendor
+elif [ -f "./vendor.json" ]; then
   echo "---> Using govendor (found vendor.json)"
   echo "---> Downloading govendor from github.com/kardianos/govendor"
   go get -u github.com/kardianos/govendor
   echo "---> Downloading dependencies (govendor sync)"
   govendor sync
+  echo "---> Installing application source..."
+  go install -v
 
+# Glide
 elif [ -f "./glide.yaml" ]; then
   echo "---> Using glide (found glide.yaml)"
   echo "---> Downloading glide"
   curl https://glide.sh/get | sh
   echo "---> Downloading dependencies (glide install)"
   glide install
+  echo "---> Installing application source..."
+  go install -v
 
-#elif [ $(test -d "./src" && test -n "$(find "./src" -mindepth 2 -type f -name '*.go' | sed 1q)") ]; then
-elif [ -d "./src" -a -n "$(find "./build/src" -mindepth 2 -type f -name '*.go' | sed 1q)" ]; then
+# gb
+elif [ -d "./src" -a -n "$(find "./src" -mindepth 2 -type f -name '*.go' | sed 1q)" ]; then
   echo "---> Using gb"
   echo "---> Downloading govendor from github.com/constabulary/gb/..."
   go get github.com/constabulary/gb/...
   echo "---> Downloading dependencies (gb build)"
   gb build
 
-elif [ -f "./Gopkg.toml" ]; then
-  echo "---> Using golang dep manager (found Gopkg.toml)"
-  echo "---> Downloading golang dep from github.com/golang/dep"
-  go get -u github.com/golang/dep/cmd/dep
-  echo "---> Downloading dependencies (dep ensure)"
-  dep ensure
-
 else
   echo "---> Downloading dependencies (go get -v ./...)"
   go get -v ./...
+  echo "---> Installing application source..."
+  go install -v
 fi
-
-echo "---> Building application source..."
-go install -v
 
 echo "===> Build completed at $(date)"
 

@@ -11,7 +11,7 @@ IMAGE_NAME=${IMAGE_NAME-ausnimbus/s2i-golang:1.8}
 VERSION=${VERSION-"1.8"}
 S2I_ARGS=${S2I_ARGS:-""}
 
-TEST_APPS=({print,gowebapp,blueprint})
+TEST_APPS=({print,golang-dep,chi,gowebapp,blueprint})
 VERSION_COMMAND="go version"
 
 extra_tests() {
