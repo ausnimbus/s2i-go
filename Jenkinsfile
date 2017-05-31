@@ -149,6 +149,16 @@ node {
 }
 
                         }
+                        stage("Stage (Golang ${versions[i]})") {
+                                openshift.withCluster() {
+        echo "==============================="
+        echo "Tag new image into staging"
+        echo "==============================="
+
+        openshift.tag("ausnimbus-ci/s2i-golang:${versions[i]}", "ausnimbus/s2i-golang:${versions[i]}")
+}
+
+                        }
                 } finally {
                         openshift.withCluster() {
                                 echo "Deleting test resources golang-ex"

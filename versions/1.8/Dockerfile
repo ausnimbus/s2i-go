@@ -56,7 +56,7 @@ CMD /usr/bin/base-usage
 # <template>
 
 ENV GOPATH=/opt/app-root \
-    PATH=$GOPATH/bin:/usr/local/go/bin:$PATH
+    PATH=/opt/app-root/bin:/usr/local/go/bin:$PATH
 
 # </template>
 # <post>
