@@ -1,1 +1,0 @@
-This folder contains files uploaded from an HTML form.

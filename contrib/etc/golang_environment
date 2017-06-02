@@ -1,4 +1,18 @@
 #!/bin/bash
+source cgroup-limits
 
-APP_URI=${APP_URI:-"main"}
-SOURCE=${GOPATH}/src/${APP_URI}
+set -e
+set -o pipefail
+# Include hidden files
+shopt -s dotglob
+
+# Set the umask to be '002' so that any files/directories created from
+# this point are group writable.
+umask 002
+
+# If $GO_LINKER_SYMBOL and GO_LINKER_VALUE are set, tell the linker to DTRT
+GO_FLAGS=${GO_FLAGS:-"-tags ausnimbus"}
+if [ -n "${GO_LINKER_SYMBOL}" -a -n "${GO_LINKER_VALUE}" ]; then
+    xval="${GO_LINKER_SYMBOL}=${GO_LINKER_VALUE}"
+    GO_FLAGS+=(-ldflags "-X ${xval}")
+fi

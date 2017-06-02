@@ -1,0 +1,4 @@
+ENV GOPATH=/opt/app-root \
+    PATH=/opt/app-root/bin:/usr/local/go/bin:$PATH
+
+RUN apk add jq --no-cache

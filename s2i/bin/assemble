@@ -1,7 +1,37 @@
 #!/bin/bash -e
 source /opt/app-root/etc/golang_environment
 
-shopt -s dotglob
+prepareSrc() {
+    if [ -z "$1" ]; then
+      echo "The app name was not provided"
+      exit 1
+    fi
+
+    echo "---> Preparing source ($GOPATH/src/$1)..."
+    mkdir -p $GOPATH/bin
+    mkdir -p $GOPATH/src/$1
+    cd $GOPATH/src/$1
+    mv /tmp/src/* .
+}
+
+handleDefaultPkgSpec() {
+    if [ "$pkgs" = "default" ]; then
+        echo "Installing package '.' (default)"
+        pkgs="."
+    fi
+}
+
+massagePkgSpecForVendor() {
+    local t=""
+    for pkg in $(echo $pkgs); do
+      if [ "${pkg:0:1}" = "." ] || [ ! -d "./vendor/$pkg" ]; then
+        t+="${pkg} "
+      else
+        t+="${name}/vendor/${pkg} "
+      fi
+    done
+    pkgs="${t}"
+}
 
 if [ -d /tmp/artifacts/ ]; then
     echo "---> Restoring build artifacts..."
@@ -9,60 +39,150 @@ if [ -d /tmp/artifacts/ ]; then
 fi
 
 echo "===> Build started at $(date)"
+cd /tmp/src/
 
-echo "---> Preparing source..."
-mkdir -p $SOURCE $GOPATH/bin
-mv /tmp/src/* $SOURCE
-pushd $SOURCE > /dev/null
-
-# Godep
+# Golang dep manager
 if [ -f "./Gopkg.toml" ]; then
-  echo "---> Using golang dep manager (found Gopkg.toml)"
-  echo "---> Downloading golang dep from github.com/golang/dep"
-  go get -u github.com/golang/dep/cmd/dep
-  echo "---> Downloading dependencies (dep ensure)"
-  dep ensure
-  echo "---> Installing application source..."
-  go install -v
+    echo "Golang dep manager is currently not supported by AusNimbus"
+    exit 1
+
+# Godeps
+elif [ -f "./Godeps/Godeps.json" ]; then
+    echo "---> Using godep (found Godeps/Godeps.json)"
+    name=$(<./Godeps/Godeps.json jq -r .ImportPath)
+    prepareSrc $name
+
+    pkgs=${GO_INSTALL_PACKAGE_SPEC:-$(<./Godeps/Godeps.json jq -r 'if .Packages then .Packages | join(" ") else "default" end')}
+    handleDefaultPkgSpec
+
+    UseGodepCommand="false" # Default to not wrapping go install with godep (vendor)
+    if [ -d "./Godeps/_workspace/src" ]; then
+        UseGodepCommand="true"
+        if [ -d "${src}/vendor" ]; then
+            echo ""
+            echo "Godeps/_workspace/src and vendor/ exist"
+            echo "code may not compile. Please convert all deps to vendor/"
+            echo ""
+        fi
+    fi
+
+    if [ "${UseGodepCommand}" = "true" ]; then
+        echo "---> Downloading godep from github.com/tools/godep"
+        go get -u github.com/tools/godep
+
+        echo "---> Running: go install -v $GO_FLAGS $pkgs"
+        godep go install -v $GO_FLAGS $pkgs
+    else
+        massagePkgSpecForVendor
+
+        echo "---> Running: go install -v $GO_FLAGS $pkgs"
+        go install -v $GO_FLAGS $pkgs
+    fi
 
 # Govendor
-elif [ -f "./vendor.json" ]; then
-  echo "---> Using govendor (found vendor.json)"
-  echo "---> Downloading govendor from github.com/kardianos/govendor"
-  go get -u github.com/kardianos/govendor
-  echo "---> Downloading dependencies (govendor sync)"
-  govendor sync
-  echo "---> Installing application source..."
-  go install -v
+elif [ -f "./vendor/vendor.json" ]; then
+    echo "---> Using Govendor (found ./vendor/vendor.json)"
+
+    echo "Checking vendor/vendor.json file."
+    if ! jq -r . < "./vendor/vendor.json" > /dev/null; then
+        err "Bad vendor/vendor.json file"
+        exit 1
+    fi
+
+    name=$(<./vendor/vendor.json jq -r .rootPath)
+    prepareSrc $name
+
+    pkgs=${GO_INSTALL_PACKAGE_SPEC-"default"}
+    handleDefaultPkgSpec
+
+    echo "---> Downloading govendor from github.com/kardianos/govendor"
+    go get -u github.com/kardianos/govendor
+
+    echo "Fetching any unsaved dependencies (govendor sync)"
+    govendor sync
+
+    massagePkgSpecForVendor
+    echo "---> Running: go install -v $GO_FLAGS $pkgs"
+    go install -v $GO_FLAGS $pkgs
 
 # Glide
 elif [ -f "./glide.yaml" ]; then
-  echo "---> Using glide (found glide.yaml)"
-  echo "---> Downloading glide"
-  curl https://glide.sh/get | sh
-  echo "---> Downloading dependencies (glide install)"
-  glide install
-  echo "---> Installing application source..."
-  go install -v
+    echo "---> Using glide (found glide.yaml)"
+
+    echo "---> Downloading glide manager from github.com/Masterminds/glide"
+    go get -u github.com/Masterminds/glide
+
+    name=$(glide name 2>/dev/null)
+    prepareSrc $name
+
+    pkgs=${GO_INSTALL_PACKAGE_SPEC-"default"}
+    handleDefaultPkgSpec
+
+    number_of_vendor_subdirectories=0
+    if [ -d "vendor" ]; then
+      number_of_vendor_subdirectories=$(find vendor -mindepth 1 -maxdepth 1 -type d | wc -l)
+    fi
+
+    if [ "$number_of_vendor_subdirectories" -eq 0 ]
+    then
+        echo "Fetching any unsaved dependencies (glide install)"
+        glide install 2>&1
+    else
+        echo "Note: skipping (glide install) due to non-empty vendor directory."
+    fi
+
+    massagePkgSpecForVendor
+    echo "---> Running: go install -v $GO_FLAGS $pkgs"
+    go install -v $GO_FLAGS $pkgs
 
 # gb
-elif [ -d "./src" -a -n "$(find "./src" -mindepth 2 -type f -name '*.go' | sed 1q)" ]; then
-  echo "---> Using gb"
-  echo "---> Downloading govendor from github.com/constabulary/gb/..."
-  go get github.com/constabulary/gb/...
-  echo "---> Downloading dependencies (gb build)"
-  gb build
+elif (test -d "./src" && test -n "$(find "./src" -mindepth 2 -type f -name '*.go' | sed 1q)"); then
+    echo "gb is currently not supported by AusNimbus"
+    exit 1
 
+# Golang native
 else
-  echo "---> Downloading dependencies (go get -v ./...)"
-  go get -v ./...
-  echo "---> Installing application source..."
-  go install -v
+    echo "--> Using native vendoring"
+    if [ -z $GO_PACKAGE_NAME ]; then
+        echo "--> Environment variable GO_PACKAGE_NAME was not provided.."
+        echo -e "    Attempting GO_PACKAGE_NAME detection..."
+        GO_PACKAGE_NAME=$(echo "$SOURCE_REPOSITORY" | sed -re "s/(https:\/\/|git@)([^?]+)\.git/\2/g" | sed -re "s/:/\//g")
+
+        # Fall back to "main"
+        if [ -z $GO_PACKAGE_NAME ]; then
+          echo "WARNING: Falling back to GO_PACKAGE_NAME=main"
+          echo "WARNING: this may not work"
+          GO_PACKAGE_NAME="main"
+        fi
+    else
+      echo "--> Environment variable GO_PACKAGE_NAME was provided"
+    fi
+    echo -e "    GO_PACKAGE_NAME set to $GO_PACKAGE_NAME"
+
+    name=$GO_PACKAGE_NAME
+    prepareSrc $name
+
+    if [[ -n "${SOURCE_CONTEXT_DIR/[ ]*\n/}" ]]; then
+      echo -e "    SOURCE_CONTEXT_DIR was provided ($SOURCE_CONTEXT_DIR)"
+      name="$GO_PACKAGE_NAME/$SOURCE_CONTEXT_DIR"
+      cd $SOURCE_CONTEXT_DIR
+    fi
+
+    pkgs=${GO_INSTALL_PACKAGE_SPEC-"default"}
+    handleDefaultPkgSpec
+
+    massagePkgSpecForVendor
+    echo "---> Running: go get -v ./..."
+    go get -v ./...
+
+    echo "---> Running: go install -v $GO_FLAGS $pkgs"
+    go install -v $GO_FLAGS $pkgs
 fi
+
+# Setup app for runtime
+ln $GOPATH/bin/$(basename $name) $GOPATH/bin/app || true
 
 echo "===> Build completed at $(date)"
 
 # Fix source directory permissions
 fix-permissions ./
-
-popd >/dev/null

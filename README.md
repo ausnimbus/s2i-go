@@ -7,6 +7,19 @@ This repository contains the source for the [source-to-image](https://github.com
 builders used to deploy [Go applications](https://www.ausnimbus.com.au/languages/golang/)
 on [AusNimbus](https://www.ausnimbus.com.au/).
 
+## Dependency Managers
+
+- Godeps
+- Govendor
+- Glide
+- Native
+
+## Environment variables
+
+- GO_PACKAGE_NAME
+- GO_INSTALL_PACKAGE_SPEC
+- GO_FLAGS
+
 ## Versions
 
 The versions currently supported are:

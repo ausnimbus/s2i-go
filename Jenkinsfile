@@ -4,11 +4,24 @@
 * DO NOT EDIT IT DIRECTLY.
 */
 node {
-        def versions = "1.7,1.8".split(',');
-        for (int i = 0; i < versions.length; i++) {
-                try {
-                        stage("Build (Golang ${versions[i]})") {
-                                openshift.withCluster() {
+        def variants = "alpine".split(',');
+        for (int v = 0; v < variants.length; v++) {
+
+                def versions = "1.7,1.8".split(',');
+                for (int i = 0; i < versions.length; i++) {
+
+                  if (variants[v] == "default") {
+                    variant = ""
+                    tag = versions[i]
+                  } else {
+                    variant = variants[v]
+                    tag = versions[i] + "-" + variant
+                  }
+
+
+                        try {
+                                stage("Build (Golang-${tag})") {
+                                        openshift.withCluster() {
         openshift.apply([
                                 "apiVersion" : "v1",
                                 "items" : [
@@ -24,10 +37,10 @@ node {
                                                 "spec" : [
                                                         "tags" : [
                                                                 [
-                                                                        "name" : "${versions[i]}-alpine",
+                                                                        "name" : "${tag}",
                                                                         "from" : [
                                                                                 "kind" : "DockerImage",
-                                                                                "name" : "golang:${versions[i]}-alpine",
+                                                                                "name" : "golang:${tag}",
                                                                         ],
                                                                         "referencePolicy" : [
                                                                                 "type" : "Source"
@@ -53,7 +66,7 @@ node {
                                 "apiVersion" : "v1",
                                 "kind" : "BuildConfig",
                                 "metadata" : [
-                                        "name" : "s2i-golang-${versions[i]}",
+                                        "name" : "s2i-golang-${tag}",
                                         "labels" : [
                                                 "builder" : "s2i-golang"
                                         ]
@@ -62,7 +75,7 @@ node {
                                         "output" : [
                                                 "to" : [
                                                         "kind" : "ImageStreamTag",
-                                                        "name" : "s2i-golang:${versions[i]}"
+                                                        "name" : "s2i-golang:${tag}"
                                                 ]
                                         ],
                                         "runPolicy" : "Serial",
@@ -79,27 +92,27 @@ node {
                                         ],
                                         "strategy" : [
                                                 "dockerStrategy" : [
-                                                        "dockerfilePath" : "versions/${versions[i]}/Dockerfile",
+                                                        "dockerfilePath" : "versions/${versions[i]}/${variant}/Dockerfile",
                                                         "from" : [
                                                                 "kind" : "ImageStreamTag",
-                                                                "name" : "golang:${versions[i]}-alpine"
+                                                                "name" : "golang:${tag}"
                                                         ]
                                                 ],
                                                 "type" : "Docker"
                                         ]
                                 ]
                         ])
-        echo "Created s2i-golang:${versions[i]} objects"
+        echo "Created s2i-golang:${tag} objects"
         /**
         * TODO: Replace the sleep with import-image
-        * openshift.importImage("golang:${versions[i]}-alpine")
+        * openshift.importImage("golang:${tag}")
         */
         sleep 60
 
         echo "==============================="
-        echo "Starting build s2i-golang-${versions[i]}"
+        echo "Starting build s2i-golang-${tag}"
         echo "==============================="
-        def builds = openshift.startBuild("s2i-golang-${versions[i]}");
+        def builds = openshift.startBuild("s2i-golang-${tag}");
 
         timeout(10) {
                 builds.untilEach(1) {
@@ -109,14 +122,14 @@ node {
         echo "Finished build ${builds.names()}"
 }
 
-                        }
-                        stage("Test (Golang ${versions[i]})") {
-                                openshift.withCluster() {
+                                }
+                                stage("Test (Golang-${tag})") {
+                                        openshift.withCluster() {
         echo "==============================="
         echo "Starting test application"
         echo "==============================="
 
-        def testApp = openshift.newApp("https://github.com/ausnimbus/golang-ex", "--image-stream=s2i-golang:${versions[i]}", "-l app=golang-ex");
+        def testApp = openshift.newApp("https://github.com/ausnimbus/golang-ex", "--image-stream=s2i-golang:${tag}", "-l app=golang-ex");
         echo "new-app created ${testApp.count()} objects named: ${testApp.names()}"
         testApp.describe()
 
@@ -148,28 +161,29 @@ node {
         sh "curl -o /dev/null $testAppHost:$testAppPort"
 }
 
-                        }
-                        stage("Stage (Golang ${versions[i]})") {
-                                openshift.withCluster() {
+                                }
+                                stage("Stage (Golang-${tag})") {
+                                        openshift.withCluster() {
         echo "==============================="
         echo "Tag new image into staging"
         echo "==============================="
 
-        openshift.tag("ausnimbus-ci/s2i-golang:${versions[i]}", "ausnimbus/s2i-golang:${versions[i]}")
+        openshift.tag("ausnimbus-ci/s2i-golang:${tag}", "ausnimbus/s2i-golang:${tag}")
 }
 
+                                }
+                        } finally {
+                                openshift.withCluster() {
+                                        echo "Deleting test resources golang-ex"
+                                        openshift.selector("dc", [app: "golang-ex"]).delete()
+                                        openshift.selector("bc", [app: "golang-ex"]).delete()
+                                        openshift.selector("svc", [app: "golang-ex"]).delete()
+                                        openshift.selector("is", [app: "golang-ex"]).delete()
+                                        openshift.selector("pods", [app: "golang-ex"]).delete()
+                                        openshift.selector("routes", [app: "golang-ex"]).delete()
+                                }
                         }
-                } finally {
-                        openshift.withCluster() {
-                                echo "Deleting test resources golang-ex"
-                                openshift.selector("dc", [app: "golang-ex"]).delete()
-                                openshift.selector("bc", [app: "golang-ex"]).delete()
-                                openshift.selector("svc", [app: "golang-ex"]).delete()
-                                openshift.selector("is", [app: "golang-ex"]).delete()
-                                openshift.selector("pods", [app: "golang-ex"]).delete()
-                                openshift.selector("routes", [app: "golang-ex"]).delete()
-                        }
-                }
 
+                }
         }
 }
