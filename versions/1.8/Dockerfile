@@ -3,26 +3,27 @@
 #
 # DO NOT EDIT IT DIRECTLY.
 #
-FROM golang:1.7-alpine
+FROM golang:1.8
 # <pre>
 
 MAINTAINER AusNimbus <support@ausnimbus.com.au>
 
-LABEL summary="Platform for running Golang 1.7 applications" \
+LABEL summary="Platform for running Golang 1.8 applications" \
       maintainer="AusNimbus <support@ausnimbus.com.au>" \
-      io.k8s.description="Platform for running Golang 1.7 applications" \
-      io.k8s.display-name="Golang 1.7"
+      io.k8s.description="Platform for running Golang 1.8 applications" \
+      io.k8s.display-name="Golang 1.8"
 
-ENV USER=100 \
+ENV USER=999 \
     HOME=/opt/app-root/src
 
 USER 0
 
-RUN apk --no-cache add bash rsync && \
+RUN apt-get update && apt-get install -y \
+      rsync nano vim && \
     ln -sf /bin/bash /bin/sh && \
     mkdir -p $HOME && \
-    adduser -S -u 1001 -G root -h $HOME -s /sbin/nologin \
-      -g "Default Application User" default && \
+    useradd -u 1001 -g 0 -d $HOME -s /sbin/nologin \
+      -c "Default Application User" default && \
     chown -R 1001:0 /opt/app-root
 
 # Copy common executable utilities.
@@ -35,7 +36,7 @@ COPY ./contrib/ /opt/app-root
 # </pre>
 # <s2i>
 
-RUN apk --no-cache add git && rm -rf /var/cache/apk/*
+RUN apt-get update && apt-get install -y git --no-install-recommends && rm -rf /var/lib/apt/lists/*
 
 ENV STI_SCRIPTS_PATH=/usr/libexec/s2i
 
@@ -59,15 +60,13 @@ CMD /usr/bin/base-usage
 ENV GOPATH=/opt/app-root \
     PATH=/opt/app-root/bin:/usr/local/go/bin:$PATH
 
-RUN apk add jq --no-cache
+RUN apt-get update && apt-get install -y jq --no-install-recommends && rm -rf /var/lib/apt/lists/*
 
 # </template>
 # <post>
 
-# Standardize on UID $USER (alpine:3.4 does not have the shadow package)
-RUN apk add shadow --no-cache --repository http://rsync.alpinelinux.org/alpine/latest-stable/community/ && \
-    usermod -o -u $USER default && \
-    apk del shadow
+# Standardize on UID $USER
+RUN usermod -o -u $USER default
 
 # Drop the root user and make the content of /opt/app-root owned by user default
 RUN chown -R $USER:0 /opt/app-root && chmod -R ug+rwx /opt/app-root

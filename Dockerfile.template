@@ -1,0 +1,4 @@
+ENV GOPATH=/opt/app-root \
+    PATH=/opt/app-root/bin:/usr/local/go/bin:$PATH
+
+RUN apt-get update && apt-get install -y jq --no-install-recommends && rm -rf /var/lib/apt/lists/*

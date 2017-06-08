@@ -4,7 +4,7 @@
 * DO NOT EDIT IT DIRECTLY.
 */
 node {
-        def variants = "alpine".split(',');
+        def variants = "default,alpine".split(',');
         for (int v = 0; v < variants.length; v++) {
 
                 def versions = "1.7,1.8".split(',');
@@ -81,7 +81,7 @@ node {
                                         "runPolicy" : "Serial",
                                         "resources" : [
                                             "limits" : [
-                                                "memory" : "2Gi"
+                                                "memory" : "2.5Gi"
                                             ]
                                         ],
                                         "source" : [
@@ -114,7 +114,7 @@ node {
         echo "==============================="
         def builds = openshift.startBuild("s2i-golang-${tag}");
 
-        timeout(20) {
+        timeout(60) {
                 builds.untilEach(1) {
                         return it.object().status.phase == "Complete"
                 }
