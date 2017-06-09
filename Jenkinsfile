@@ -12,10 +12,10 @@ node {
 
                   if (variants[v] == "default") {
                     variant = ""
-                    tag = versions[i]
+                    tag = "${versions[i]}"
                   } else {
                     variant = variants[v]
-                    tag = versions[i] + "-" + variant
+                    tag = "${versions[i]}-${variant}"
                   }
 
 
@@ -40,7 +40,7 @@ node {
                                                                         "name" : "${tag}",
                                                                         "from" : [
                                                                                 "kind" : "DockerImage",
-                                                                                "name" : "golang:${tag}",
+                                                                                "name" : "golang:${versions[i]}",
                                                                         ],
                                                                         "referencePolicy" : [
                                                                                 "type" : "Source"
