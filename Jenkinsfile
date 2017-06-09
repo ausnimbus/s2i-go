@@ -4,7 +4,7 @@
 * DO NOT EDIT IT DIRECTLY.
 */
 node {
-        def variants = "default,alpine".split(',');
+        def variants = "default".split(',');
         for (int v = 0; v < variants.length; v++) {
 
                 def versions = "1.7,1.8".split(',');
@@ -40,7 +40,7 @@ node {
                                                                         "name" : "${tag}",
                                                                         "from" : [
                                                                                 "kind" : "DockerImage",
-                                                                                "name" : "golang:${versions[i]}",
+                                                                                "name" : "golang:${tag}",
                                                                         ],
                                                                         "referencePolicy" : [
                                                                                 "type" : "Source"
