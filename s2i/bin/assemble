@@ -33,7 +33,7 @@ massagePkgSpecForVendor() {
     pkgs="${t}"
 }
 
-if ls /tmp/artifacts/* &>/dev/null; then
+if ls -U /tmp/artifacts/* 1> /dev/null 2>&1; then
     echo "---> Restoring build artifacts..."
     mv -v /tmp/artifacts/* ./
 fi
