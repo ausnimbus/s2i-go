@@ -16,12 +16,13 @@ and only the HTTP protocol is permitted for incoming connections.
 
 ## Environment variables
 
-* **GO_PACKAGE_NAME**
+* **GO_PACKAGE_NAME** (native vendoring only)
+
   * Your full application URI (ie. github.com/ausnimbus/golang-ex)
-  * **NOTE:** Only used in native vendoring
   * Default: main
 
 * **GO_INSTALL_PACKAGE_SPEC**
+
   * Overwrite the default install path
   * Default: `.`
 
