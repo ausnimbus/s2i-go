@@ -1,4 +1,11 @@
 #!/bin/bash -e
 source /opt/app-root/etc/golang_environment
 
-exec $GOPATH/bin/app
+# APP_RUN defined
+if [[ -n "$APP_RUN" ]]; then
+  echo "---> Running application from ($APP_RUN) ..."
+  eval bash -c "$APP_RUN"
+else
+  echo "---> Starting app"
+  exec $GOPATH/bin/app
+fi
