@@ -123,7 +123,7 @@ NAME        | Description
 ------------|-------------
 APP_RUN     | Define a custom command to start your application. eg. `node server.js`
 
-**NOTE:** `APP_RUN` will overwrite any builder's runtime configuration (including the [Debug Mode](#Debug Mode) section)
+**NOTE:** `APP_RUN` will overwrite any builder's runtime configuration (including the [Debug Mode](#debug-mode) section)
 
 Alternatively you may customize or overwrite the entire runtime stage by including the executable file `.s2i/bin/run`
 
