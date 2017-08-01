@@ -38,7 +38,7 @@ if ls -U /tmp/artifacts/* 1> /dev/null 2>&1; then
     mv -v /tmp/artifacts/* ./
 fi
 
-echo "===> Build started at $(date)"
+# Find application name before moving src
 cd /tmp/src/
 
 # Golang dep manager
@@ -181,8 +181,6 @@ fi
 
 # Setup app for runtime
 ln $GOPATH/bin/$(basename $name) $GOPATH/bin/app || true
-
-echo "===> Build completed at $(date)"
 
 # Fix source directory permissions
 fix-permissions ./
