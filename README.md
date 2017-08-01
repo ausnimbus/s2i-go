@@ -25,7 +25,7 @@ This document describes the behaviour and environment configuration when running
 
 AusNimbus supports the latest stable releases.
 
-The currently supported versions are `1.7` and `1.8`
+The currently supported versions are `1.7`, `1.8` and `1.9`
 
 ## Web Process
 
