@@ -3,7 +3,7 @@
 NAME="golang"
 DISPLAY_NAME="Golang"
 TYPE="s2i"
-VARIANTS="default,alpine"
+VARIANTS="default"
 VERSIONS="1.7,1.8,1.9"
 
 DOCKER_PUSH=${DOCKER_PUSH:-"false"}
