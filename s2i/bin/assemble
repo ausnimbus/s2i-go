@@ -44,7 +44,6 @@ cd /tmp/src/
 # Golang dep manager
 if [ -f "./Gopkg.toml" ]; then
     echo "Golang dep manager is currently not supported by AusNimbus"
-    exit 1
 
 # Godeps
 elif [ -f "./Godeps/Godeps.json" ]; then
@@ -138,7 +137,6 @@ elif [ -f "./glide.yaml" ]; then
 # gb
 elif (test -d "./src" && test -n "$(find "./src" -mindepth 2 -type f -name '*.go' | sed 1q)"); then
     echo "gb is currently not supported by AusNimbus"
-    exit 1
 
 # Golang native
 else
